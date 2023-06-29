@@ -5,7 +5,10 @@
 package it.polito.tdp.nyc;
 
 import java.net.URL;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
+
 import it.polito.tdp.nyc.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -34,7 +37,7 @@ public class FXMLController {
     private Button btnPercorso; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbProvider"
-    private ComboBox<?> cmbProvider; // Value injected by FXMLLoader
+    private ComboBox<String> cmbProvider; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtDistanza"
     private TextField txtDistanza; // Value injected by FXMLLoader
@@ -51,6 +54,20 @@ public class FXMLController {
     @FXML
     void doAnalisiGrafo(ActionEvent event) {
     	
+    	if(model.getNVertici()<0) {
+    		
+    		this.txtResult.clear();
+    		this.txtResult.setText("Grafo non ancora creato");
+    		
+    	}else {
+    		
+    		Map<String, Integer> connessi = model.locationWithHighestNumberOfNeig();
+    		
+    		for (Map.Entry<String, Integer> entry : connessi.entrySet()) {
+    		    this.txtResult.appendText("\n" + entry.getKey() + " Numero vicini: " + entry.getValue());
+    		}
+    	}
+    	
     }
 
     @FXML
@@ -60,6 +77,26 @@ public class FXMLController {
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
+    	
+    	this.txtResult.clear();
+    	String provider = this.cmbProvider.getValue();
+    	String input = this.txtDistanza.getText();
+    	if(input == "") {
+    		txtResult.setText("Distanza mancante ");
+    	}
+    	if(provider == null) {
+    		this.txtResult.appendText("Provider mancante ");
+    	}
+    	
+    	try {
+    		double inputNum = Double.parseDouble(input);
+    		model.creaGrafo(inputNum, provider);
+    		txtResult.setText("I vertici sono: "+ model.getNVertici() + "\n Gli archi sono : "+ model.getNArchi());
+ 
+    		
+    	}catch(NumberFormatException e) {
+    		txtResult.appendText("Errore");
+    	}
     	
     }
 
@@ -77,5 +114,6 @@ public class FXMLController {
 
     public void setModel(Model model) {
     	this.model = model;
+    	this.cmbProvider.getItems().setAll(model.loadProvider());
     }
 }
